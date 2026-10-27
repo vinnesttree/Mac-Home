@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  push:
+    paths:
+      - "Sources/**"
+      - "Support/**"
+      - "scripts/build.sh"
+      - "Package.swift"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: swift --version
+
+      # The target is a Late 2014 Mac mini, so build for Intel (the runner itself is Apple silicon).
+      - name: Build MacHome.app for Intel
+        run: scripts/build.sh --arch x86_64
+
+      - name: Check the binary
+        run: |
+          lipo -info build/MacHome.app/Contents/MacOS/MacHome
+          otool -l build/MacHome.app/Contents/MacOS/MacHome | grep -A4 LC_BUILD_VERSION | grep minos
+          codesign --verify --verbose build/MacHome.app
+
+      - name: Zip
+        run: ditto -c -k --keepParent build/MacHome.app build/MacHome-intel.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MacHome-intel
+          path: build/MacHome-intel.zip
