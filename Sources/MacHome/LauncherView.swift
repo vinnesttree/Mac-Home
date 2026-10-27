@@ -65,7 +65,7 @@ struct LauncherView: View {
             .zIndex(focused ? 1 : 0)
             .contentShape(Rectangle())
             .onHover { inside in
-                if inside { model.focusIndex = index }
+                if inside && model.mouseIsActive { model.focusIndex = index }
             }
             .onTapGesture {
                 model.focusIndex = index

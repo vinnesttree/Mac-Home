@@ -25,6 +25,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     private var externalPID: pid_t?
     private var activity: NSObjectProtocol?
     private var keyMonitor: Any?
+    private var mouseMonitor: Any?
     private var observers: [NSObjectProtocol] = []
 
     private var screenFrame: NSRect {
@@ -58,7 +59,7 @@ final class AppController: NSObject, NSApplicationDelegate {
         router = InputRouter(gamepad: gamepad, synth: synth, app: self)
         router.start()
 
-        installKeyMonitor()
+        installEventMonitors()
         observeSystem()
         showLauncher()
     }
@@ -297,7 +298,7 @@ final class AppController: NSObject, NSApplicationDelegate {
     }
 
     /// Arrow keys, Return and Space work on the home screen too, for when a keyboard is handy.
-    private func installKeyMonitor() {
+    private func installEventMonitors() {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self, self.player == nil, self.launcherWindow.isKeyWindow,
                   event.modifierFlags.intersection([.command, .control, .option]).isEmpty else { return event }
@@ -310,6 +311,10 @@ final class AppController: NSObject, NSApplicationDelegate {
             default: break
             }
             return nil
+        }
+        mouseMonitor = NSEvent.addLocalMonitorForEvents(matching: .mouseMoved) { [weak self] event in
+            self?.launcher.mouseMovedAt = ProcessInfo.processInfo.systemUptime
+            return event
         }
     }
 

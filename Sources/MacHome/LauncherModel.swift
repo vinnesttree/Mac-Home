@@ -16,6 +16,13 @@ final class LauncherModel: ObservableObject {
 
     var screenSize = CGSize(width: 1920, height: 1080)
     var onActivate: ((LauncherEntry) -> Void)?
+    /// When the real mouse last moved. Hover only moves focus right after that, so tiles scrolling
+    /// under a resting pointer don't steal focus from the controller.
+    var mouseMovedAt: TimeInterval = -100
+
+    var mouseIsActive: Bool {
+        ProcessInfo.processInfo.systemUptime - mouseMovedAt < 0.5
+    }
 
     var focused: LauncherEntry? {
         entries.indices.contains(focusIndex) ? entries[focusIndex] : nil
