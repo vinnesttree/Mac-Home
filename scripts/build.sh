@@ -1,16 +1,26 @@
 #!/bin/bash
 # Builds build/MacHome.app with Apple's Command Line Tools (xcode-select --install).
-# Xcode and an Apple ID are not needed. Extra arguments go to `swift build`, e.g. --arch x86_64.
+# Xcode and an Apple ID are not needed.
+#
+# This calls the Swift compiler directly instead of `swift build`: with only the Command Line
+# Tools on macOS 12, Swift Package Manager fails with "no such module 'PackageDescription'".
+#
+# The app is built for this Mac's processor. Set ARCH=x86_64 or ARCH=arm64 to choose another.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-swift build -c release ${1+"$@"}
-bin_dir="$(swift build -c release ${1+"$@"} --show-bin-path)"
-
+arch="${ARCH:-$(uname -m)}"
+sdk="$(xcrun --sdk macosx --show-sdk-path)"
 app="build/MacHome.app"
+
 rm -rf "$app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-cp "$bin_dir/MacHome" "$app/Contents/MacOS/MacHome"
+
+xcrun swiftc -O -wmo -swift-version 5 \
+    -target "$arch-apple-macos12.0" -sdk "$sdk" \
+    -module-name MacHome \
+    -o "$app/Contents/MacOS/MacHome" \
+    Sources/MacHome/*.swift
 cp Support/Info.plist "$app/Contents/Info.plist"
 
 # Ad-hoc signing needs no developer account. It gives macOS a stable identity for the

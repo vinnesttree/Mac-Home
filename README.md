@@ -39,6 +39,10 @@ cd Mac-Home
 `install.sh` builds the app, copies it to `~/Applications/MacHome.app`, starts it, and sets it to start at
 every login. To only build it, run `./scripts/build.sh`; the app appears in `build/`.
 
+The scripts call the Swift compiler directly. `swift build` doesn't work with only the Command Line Tools
+on Monterey: it stops with "no such module 'PackageDescription'". `Package.swift` is only there so editors
+can open the project.
+
 Every push to GitHub also builds an Intel copy of the app. It's on the repository's **Actions** tab, under
 **MacHome-intel**. A downloaded copy isn't signed by Apple, so the first time, right-click it and choose
 **Open**.

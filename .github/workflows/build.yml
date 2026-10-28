@@ -21,7 +21,7 @@ jobs:
 
       # The target is a Late 2014 Mac mini, so build for Intel (the runner itself is Apple silicon).
       - name: Build MacHome.app for Intel
-        run: scripts/build.sh --arch x86_64
+        run: ARCH=x86_64 scripts/build.sh
 
       - name: Check the binary
         run: |
